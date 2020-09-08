@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_onboading_app/data/data.dart';
 
@@ -25,7 +23,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<SliderModel> mySlides = new List<SliderModel>();
   int slideIndex = 0;
-  PageController controller;
+  PageController pageController = new PageController(initialPage: 0);
 
   Widget _buildPageIndicator(bool isCurrentPage) {
     return Container(
@@ -43,7 +41,6 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     mySlides = getSlides();
-    controller = new PageController();
   }
 
   @override
@@ -60,25 +57,31 @@ class _HomeState extends State<Home> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Container(
-            child: PageView.builder(
-          controller: controller,
-          itemCount: mySlides.length,
-          itemBuilder: (context, index) {
-            return SliderTile(
-              imagePath: mySlides[index].getImageAssetPath(),
-              title: mySlides[index].getTitle(),
-              desc: mySlides[index].getDesc(),
-            );
-          },
-        )),
-        bottomSheet: slideIndex != mySlides.length
+          child: PageView.builder(
+            controller: pageController,
+            onPageChanged: (val) {
+              setState(() {
+                slideIndex = val;
+              });
+            },
+            itemCount: mySlides.length,
+            itemBuilder: (context, index) {
+              return SliderTile(
+                imagePath: mySlides[index].getImageAssetPath(),
+                title: mySlides[index].getTitle(),
+                desc: mySlides[index].getDesc(),
+              );
+            },
+          ),
+        ),
+        bottomSheet: slideIndex != mySlides.length - 1
             ? Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     FlatButton(
                       onPressed: () {
-                        controller.animateToPage(mySlides.length,
+                        pageController.animateToPage(mySlides.length - 1,
                             duration: Duration(microseconds: 400),
                             curve: Curves.linear);
                       },
@@ -94,8 +97,8 @@ class _HomeState extends State<Home> {
                     Container(
                       child: Row(
                         children: [
-                          for (int i = 0; i < mySlides.length - 1; i++)
-                            i == slideIndex
+                          for (int i = 0; i < mySlides.length; i++)
+                            slideIndex == i
                                 ? _buildPageIndicator(true)
                                 : _buildPageIndicator(false),
                         ],
@@ -103,7 +106,7 @@ class _HomeState extends State<Home> {
                     ),
                     FlatButton(
                       onPressed: () {
-                        controller.animateToPage(slideIndex + 2,
+                        pageController.animateToPage(slideIndex + 1,
                             duration: Duration(milliseconds: 500),
                             curve: Curves.linear);
                       },
@@ -123,7 +126,7 @@ class _HomeState extends State<Home> {
                 onTap: () {},
                 child: Container(
                   height: 60,
-                  color: Colors.blue,
+                  color: Colors.purple,
                   alignment: Alignment.center,
                   child: Text(
                     "GET STARTED NOW",
@@ -139,6 +142,7 @@ class _HomeState extends State<Home> {
   }
 }
 
+// ignore: must_be_immutable
 class SliderTile extends StatelessWidget {
   String imagePath, title, desc;
 
